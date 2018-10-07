@@ -1,0 +1,25 @@
+FROM centos
+
+MAINTAINER Jhonier Gomez <yonieer13@gmail.com>
+
+LABEL version=1
+
+RUN yum -y groupinstall "web server" && \ 
+    yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
+    yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
+    yum -y install yum-utils && yum-config-manager --enable remi-php56 && \
+    yum -y install php php-mcrypt php-cli php-gd php-curl php-mysql php-ldap php-zip php-fileinfo \
+    php-pear php-mysql php-pdo php-gd php-mbstring unzip
+
+COPY httppresta.conf /etc/httpd/conf/httpd.conf
+COPY prestashop.conf /etc/httpd/conf.d/
+RUN mkdir -p  /opt/app/prestashop
+COPY prestashop.zip /opt/app/prestashop
+
+WORKDIR /opt/app/prestashop
+
+RUN unzip prestashop.zip && chown apache:apache -R * && rm -f prestashop.zip && mv admin adminlina
+
+EXPOSE 8001
+
+ENTRYPOINT ["/sbin/apachectl", "-DFOREGROUND"]

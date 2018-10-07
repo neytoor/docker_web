@@ -1,0 +1,22 @@
+FROM centos
+
+MAINTAINER Jhonier Gomez <yonieer13@gmail.com>
+
+LABEL version=1
+
+RUN yum -y groupinstall "web server" && \
+    yum -y install httpd php php-pear php-mysql php-pdo php-gd php-mbstring
+
+COPY httpwordpress.conf	/etc/httpd/conf/httpd.conf
+ADD https://es.wordpress.org/wordpress-4.9.8-es_ES.tar.gz /var/www
+
+WORKDIR /var/www
+
+RUN tar xzvf *.tar.gz && \
+    rm -f *tar.gz && \
+    chmod o+w -R wordpress ; chown root.root wordpress && \
+    mv wordpress/* /var/www/html/
+
+EXPOSE 8000
+
+ENTRYPOINT ["/sbin/apachectl", "-DFOREGROUND"]

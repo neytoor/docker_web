@@ -1,0 +1,36 @@
+FROM centos
+
+MAINTAINER Jhonier Gomez <yonieer13@gmail.com>
+
+LABEL version=1
+
+MAINTAINER Yonier Gomez <yonieer13@gmail.com>
+
+RUN yum -y groupinstall "web server" && \ 
+    yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && \
+    yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
+    yum -y install yum-utils && yum-config-manager --enable remi-php56 && \
+    yum -y install  php-pear php-mysql php-pdo php-gd php-mbstring \
+    php php-mcrypt php-cli php-gd php-curl php-mysql php-ldap php-zip php-fileinfo
+
+ruta=/var/www/html
+RUN mkdir $ruta/prestashop
+COPY prestashop.zip $ruta/prestashop
+
+WORKDIR $ruta/prestashop
+
+RUN unzip prestashop.zip && chown apache:apache -R * && rm -f prestashop.zip && mv admin adminlina
+#MIRAR
+COPY httpwordpress.conf	/etc/httpd/conf/httpd.conf
+ADD https://es.wordpress.org/wordpress-4.9.8-es_ES.tar.gz /var/www
+
+WORKDIR /var/www
+
+RUN tar xzvf *.tar.gz && \
+    rm -f *tar.gz && \
+    chmod o+w -R wordpress ; chown root.root wordpress && \
+    mv wordpress/* /var/www/html/
+
+EXPOSE 8000
+
+ENTRYPOINT ["/sbin/apachectl", "-DFOREGROUND"]
